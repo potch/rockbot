@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link href='http://fonts.googleapis.com/css?family=Fira+Sans:300italic,300' rel='stylesheet' type='text/css'>
+    <style>
+      * {
+        margin: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        height: 100%;
+      }
+      body {
+        background: #000;
+        color: #fff;
+        font-family: 'Fira Sans', sans-serif;
+        overflow: hidden;
+        height: 100%;
+      }
+      .app {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+      }
+      .zone {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+      .info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .img {
+        flex: 0;
+        margin-right: 7vh;
+        height: 100%;
+      }
+      .track {
+        font-weight: 400;
+        font-size: 3em;
+        margin-bottom: 2vh;
+      }
+      .artist {
+        font-weight: 400;
+        font-size: 2em;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <section class="zone" data-zone="1">
+        <img class="img">
+        <div class="info">
+          <h1 class="track"></h1>
+          <h2 class="artist"></h2>
+        </div>
+      </section>
+      <section class="zone" data-zone="2">
+        <img class="img">
+        <div class="info">
+          <h1 class="track"></h1>
+          <h2 class="artist"></h2>
+        </div>
+      </section>
+      <section class="zone" data-zone="3">
+        <img class="img">
+        <div class="info">
+          <h1 class="track"></h1>
+          <h2 class="artist"></h2>
+        </div>
+      </section>
+      <section class="zone" data-zone="4">
+        <img class="img">
+        <div class="info">
+          <h1 class="track"></h1>
+          <h2 class="artist"></h2>
+        </div>
+      </section>
+      <section class="zone" data-zone="5">
+        <img class="img">
+        <div class="info">
+          <h1 class="track"></h1>
+          <h2 class="artist"></h2>
+        </div>
+      </section>
+    </div>
+    <script>
+      function update(zone) {
+        var el = document.querySelector('[data-zone="' + zone + '"]');
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          var data;
+          try {
+            data = JSON.parse(xhr.response);
+          } catch (e) {
+            el.style.display = 'none';
+            return;
+          }
+          if (data && data.aNowPlaying) {
+            el.style.display = 'flex';
+            el.querySelector('.img').src = data.aNowPlaying.sArtwork.replace('/100/','/500/');
+            el.querySelector('.track').innerHTML = data.aNowPlaying.sSong;
+            el.querySelector('.artist').innerHTML = data.aNowPlaying.sArtist;
+          } else {
+            el.style.display = 'none';
+          }
+        };
+        xhr.open('get', '/playing/' + zone);
+        xhr.send();
+      }
+      for (var i = 1; i <= 5; i++) {
+        update(i);
+      }
+    </script>
+  </body>
+</html>
