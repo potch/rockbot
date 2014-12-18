@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <link href='http://fonts.googleapis.com/css?family=Fira+Sans:300italic,300' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Fira+Sans:300italic,300' rel='stylesheet' type='text/css'>
     <style>
       * {
         margin: 0;
@@ -106,7 +106,7 @@
           }
           if (data && data.aNowPlaying) {
             el.style.display = 'flex';
-            el.querySelector('.img').src = data.aNowPlaying.sArtwork.replace('/100/','/500/');
+            el.querySelector('.img').src = data.aNowPlaying.sArtwork.replace('/100/','/500/').replace('https://', '//');
             el.querySelector('.track').innerHTML = data.aNowPlaying.sSong;
             el.querySelector('.artist').innerHTML = data.aNowPlaying.sArtist;
           } else {
