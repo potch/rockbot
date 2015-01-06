@@ -17,6 +17,7 @@
         color: #fff;
         font-family: 'Fira Sans', sans-serif;
         overflow: hidden;
+        font-size: 2vh;
         height: 100%;
       }
       .app {
@@ -44,7 +45,10 @@
       .track {
         font-weight: 400;
         font-size: 3em;
+        white-space: nowrap;
         margin-bottom: 2vh;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .artist {
         font-weight: 400;
@@ -55,7 +59,7 @@
   </head>
   <body>
     <div class="app">
-      <section class="zone" data-zone="1">
+      <section class="zone" data-zone="1-2">
         <img class="img">
         <div class="info">
           <h1 class="track"></h1>
@@ -92,8 +96,8 @@
       </section>
     </div>
     <script>
-      function update(zone) {
-        var el = document.querySelector('[data-zone="' + zone + '"]');
+      function update(el) {
+        var zone = el.getAttribute('data-zone');
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
           var data;
@@ -115,8 +119,10 @@
         xhr.open('get', '/playing/' + zone);
         xhr.send();
       }
-      for (var i = 1; i <= 5; i++) {
-        update(i);
+      var els = document.querySelectorAll('[data-zone]');
+      document.body.style.fontSize = (8 / els.length) + 'vh';
+      for (var i = 0; i <= els.length; i++) {
+        update(els[i]);
       }
     </script>
   </body>
