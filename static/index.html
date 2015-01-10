@@ -7,123 +7,160 @@
     <style>
       * {
         margin: 0;
+        padding: 0;
         box-sizing: border-box;
       }
       html, body {
         height: 100%;
+        margin: 0;
       }
       body {
         background: #000;
         color: #fff;
         font-family: 'Fira Sans', sans-serif;
         overflow: hidden;
-        font-size: 2vh;
+        font-size: 4vmin;
         height: 100%;
+      }
+      #app {
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
       }
       .app {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-      }
-      .zone {
+        width: 300vw;
         display: flex;
         flex-direction: row;
+        align-items: stretch;
+        height: 100vh;
+        transition: 300ms transform ease-out;
+      }
+      .app > section {
+        height: 100vh;
+        width: 100vw;
+      }
+      .app[data-mode="overview"] {
+        transform: translate(0, 0);
+      }
+      .app[data-mode="detail"] {
+        transform: translate(-100vw, 0);
+      }
+      .detail > * + * {
+        margin-top: 1rem;
+      }
+
+      .queue-container {
+        position: relative;
         flex: 1;
         overflow: hidden;
-        position: relative;
       }
-      .info {
+      .queue {
+        height: 100%;
+        overflow: auto;
+        font-size: 5vmin;
+      }
+      .queue-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+      .queue-item > * + * {
+        margin-left: 1em;
+      }
+      .queue-item .info {
+        flex: 1;
+      }
+      .queue .user {
+        height: 1em;
+        width: 1em;
+      }
+      .queue .up, .queue .down {
+        white-space: nowrap;
+        width: 10vmin;
+        text-align: center;
+      }
+
+      .detail {
+        display: flex;
+        padding: 1em;
+        flex-direction: column;
+      }
+
+      .overview {
+        height: 100%;
         display: flex;
         flex-direction: column;
-        justify-content: center;
       }
-      .img {
-        margin-right: 7vh;
-        height: 100%;
+      .overview .zone-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        font-size: 4vmin;
       }
-      .track {
-        font-weight: 400;
-        font-size: 3em;
-        white-space: nowrap;
-        margin-bottom: 2vh;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0 1rem 0 0;
+        font-size: 4vmin;
       }
-      .artist {
-        font-weight: 400;
-        font-size: 2em;
+      header > * + * {
+        margin-left: 1em;
+      }
+      header a {
+        padding: 1rem 1rem 1rem 0;
+      }
+      header > h1 {
+        flex: 1;
+      }
+      .user {
+        border-radius: 100%;
+        background-size: cover;
+        background-position: center;
+      }
+      .upnext {
         font-style: italic;
+        font-size: 5vmin;
+        margin-top: 2rem;
+      }
+      .nowplaying {
+        display: flex;
+        flex-direction: row;
+      }
+      .nowplaying .info {
+        display: flex;
+        font-size: 4vmin;
+        line-height: 6vmin;
+        margin-left: 1em;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-start;
+      }
+      .nowplaying .art {
+        flex-shrink: 0;
+        height: 30vmin;
+        width: 30vmin;
+      }
+      .nowplaying .user {
+        height: 8vmin;
+        width: 8vmin;
+        margin-top: 1rem;
+      }
+      .art {
+        background-position: center;
+        background-size: cover;
+      }
+      a:link, a:visited, a:active {
+        color: #fff;
+        text-decoration: none;
       }
     </style>
   </head>
   <body>
-    <div class="app">
-      <section class="zone" data-zone="1-2">
-        <img class="img">
-        <div class="info">
-          <h1 class="track"></h1>
-          <h2 class="artist"></h2>
-        </div>
-      </section>
-      <section class="zone" data-zone="2">
-        <img class="img">
-        <div class="info">
-          <h1 class="track"></h1>
-          <h2 class="artist"></h2>
-        </div>
-      </section>
-      <section class="zone" data-zone="3">
-        <img class="img">
-        <div class="info">
-          <h1 class="track"></h1>
-          <h2 class="artist"></h2>
-        </div>
-      </section>
-      <section class="zone" data-zone="4">
-        <img class="img">
-        <div class="info">
-          <h1 class="track"></h1>
-          <h2 class="artist"></h2>
-        </div>
-      </section>
-      <section class="zone" data-zone="5">
-        <img class="img">
-        <div class="info">
-          <h1 class="track"></h1>
-          <h2 class="artist"></h2>
-        </div>
-      </section>
+    <div id="app">
     </div>
-    <script>
-      function update(el) {
-        var zone = el.getAttribute('data-zone');
-        var xhr = new XMLHttpRequest();
-        xhr.onload = function () {
-          var data;
-          try {
-            data = JSON.parse(xhr.response);
-          } catch (e) {
-            el.style.display = 'none';
-            return;
-          }
-          if (data && data.aNowPlaying) {
-            el.style.display = 'flex';
-            el.querySelector('.img').src = data.aNowPlaying.sArtwork.replace('/100/','/500/').replace(/^https?:/, '');
-            el.querySelector('.track').innerHTML = data.aNowPlaying.sSong;
-            el.querySelector('.artist').innerHTML = data.aNowPlaying.sArtist;
-          } else {
-            el.style.display = 'none';
-          }
-        };
-        xhr.open('get', '/playing/' + zone);
-        xhr.send();
-      }
-      var els = document.querySelectorAll('[data-zone]');
-      document.body.style.fontSize = (8 / els.length) + 'vh';
-      for (var i = 0; i <= els.length; i++) {
-        update(els[i]);
-      }
-    </script>
+    <script src="react-0.12.2.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>

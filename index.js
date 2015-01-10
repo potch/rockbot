@@ -1,28 +1,117 @@
 var express = require('express');
+var http = require('http');
 var request = require('request');
+var socketio = require('socket.io');
 var app = express();
 
-app.set('port', (process.env.PORT || 8080));
+app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/static'));
 
-var url = 'https://rockbot.com/venues/mozilla-mtv-';
+var server = http.createServer(app);
+var io = socketio.listen(server);
 
-app.get('/', function (req, res) {
-  res.redirect('/index.html');
-});
+var nowplayingURL = 'https://rockbot.com/venues/mozilla-mtv-';
+var apiURL = 'https://api.rockbot.com/';
 
-app.get('/playing/:zone$', function(req, res) {
-  request(url + req.params.zone + '.json', function (error, response, body) {
-    if (error) {
-      res.status(400);
-      res.end(error);
-    } else {
-      res.set('Content-Type', 'application/json');
-      res.end(body);
+var venues = process.env.VENUES;
+
+if (venues && typeof venues === 'string') {
+  venues = venues.split('|');
+  if (venues.length) {
+    venues = venues.map(function(v) {
+      v = v.split(':');
+      return {
+        name: v[0],
+        id: v[1],
+        api: v[2]
+      };
+    });
+    venues.forEach(function(v) {
+      venues[v.id] = v;
+    });
+  } else {
+    console.error('No Venues Found! Be sure the VENUES variable is set.');
+  }
+} else {
+  console.error('No Venues Found! Be sure the VENUES variable is set.');
+  venues = [];
+}
+
+var currently = [];
+
+function api(v, m, p, cb) {
+  var parts = m.split(':');
+  var type = parts[0];
+  var method = parts[1];
+  var venue = venues[v];
+  p.api_key = venue.api;
+  p.method = method;
+  console.log(apiURL + type, p);
+  request({
+    url: apiURL + type,
+    qs: p
+  }, function(err, res, body) {
+    if (err) {
+      cb(err);
     }
+    if (body) {
+      try {
+        cb(null, JSON.parse(body));
+      } catch (e) {
+        cb(e);
+      }
+    } else {
+      cb(null);
+    }
+  });
+}
+
+function checkCurrent() {
+  var num = venues.length;
+  var count = 0;
+  venues.forEach(function(v, i) {
+    api(v.id, 'kiosk:get_now_playing', {}, function (err, res) {
+      count++;
+      if (num === count) {
+        io.emit('currently', currently);
+      }
+      if (err || !res) {
+        console.error('error getting data');
+        return;
+      }
+      res.name = v.name;
+      res.id = v.id;
+      currently[i] = res;
+    });
+  });
+  setTimeout(checkCurrent, 10000);
+}
+
+io.on('connect', function(socket) {
+  io.emit('currently', currently);
+
+  socket.on('upvote', function(o) {
+    console.log('upvote', o);
+    var v = venues[o.venue];
+    api(o.venue, 'kiosk:add_up_vote', {pick: o.pick}, function (err, res) {
+      console.log(err, res);
+    });
+  });
+  socket.on('downvote', function(o) {
+    console.log('downvote', o);
+    var v = venues[o.venue];
+    api(o.venue, 'kiosk:add_down_vote', {pick: o.pick}, function (err, res) {
+      console.log(err, res);
+    });
   });
 });
 
-app.listen(app.get('port'), function() {
+
+app.get('/', function(req, res) {
+  res.redirect('/index.html');
+});
+
+server.listen(app.get('port'), function() {
   console.log("Node app is running at localhost:" + app.get('port'));
+  checkCurrent();
 });
