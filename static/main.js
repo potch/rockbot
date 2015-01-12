@@ -140,7 +140,7 @@ var ZoneDetail = React.createClass({displayName: "ZoneDetail",
             React.createElement("h1", null, z.name)
           ), 
           React.createElement("div", {className: "nowplaying"}, 
-            React.createElement(AlbumArt, {url: now.sArtwork}), 
+            React.createElement(AlbumArt, {url: now.sArtwork, big: true}), 
             React.createElement("div", {className: "info"}, 
               React.createElement("h1", null, now.sArtist, " - ", now.sSong), 
               React.createElement(User, {className: "user", avatar: now.sUserImage, name: now.sUser})
@@ -163,8 +163,13 @@ var ZoneDetail = React.createClass({displayName: "ZoneDetail",
 
 var AlbumArt = React.createClass({displayName: "AlbumArt",
   render: function () {
+    var url = this.props.url;
+    var big = this.props.big;
+    if (big) {
+      url = url.replace('/150/', '/500/');
+    }
     var style = {
-      backgroundImage: 'url(' + this.props.url + ')'
+      backgroundImage: 'url(' + url + ')'
     };
     return React.createElement("div", {className: "art", style: style});
   }

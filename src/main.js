@@ -140,7 +140,7 @@ var ZoneDetail = React.createClass({
             <h1>{z.name}</h1>
           </header>
           <div className="nowplaying">
-            <AlbumArt url={now.sArtwork} />
+            <AlbumArt url={now.sArtwork} big={true} />
             <div className="info">
               <h1>{now.sArtist} - {now.sSong}</h1>
               <User className="user" avatar={now.sUserImage} name={now.sUser} />
@@ -163,8 +163,13 @@ var ZoneDetail = React.createClass({
 
 var AlbumArt = React.createClass({
   render: function () {
+    var url = this.props.url;
+    var big = this.props.big;
+    if (big) {
+      url = url.replace('/150/', '/500/');
+    }
     var style = {
-      backgroundImage: 'url(' + this.props.url + ')'
+      backgroundImage: 'url(' + url + ')'
     };
     return <div className="art" style={style} />;
   }
