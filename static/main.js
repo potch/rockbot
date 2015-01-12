@@ -73,8 +73,11 @@ var ZoneOverview = React.createClass({displayName: "ZoneOverview",
     if (this.props.nowPlaying) {
       return (
         React.createElement("div", null, 
-          React.createElement("div", null, this.props.name), 
-          React.createElement("div", null, this.props.nowPlaying.sArtist, " - ", this.props.nowPlaying.sSong)
+          React.createElement(AlbumArt, {url: this.props.nowPlaying.sArtwork}), 
+          React.createElement("div", {className: "info"}, 
+            React.createElement("div", null, this.props.name), 
+            React.createElement("div", null, this.props.nowPlaying.sArtist, " - ", this.props.nowPlaying.sSong)
+          )
         )
       );
     }
@@ -130,9 +133,6 @@ var ZoneDetail = React.createClass({displayName: "ZoneDetail",
     if (z) {
       var now = z.aData.aNowPlaying;
       var queue = z.aData.aQueue;
-      var style = {
-        backgroundImage: 'url(' + now.sArtwork + ')'
-      };
       return (
         React.createElement("section", {className: "detail"}, 
           React.createElement("header", null, 
@@ -140,7 +140,7 @@ var ZoneDetail = React.createClass({displayName: "ZoneDetail",
             React.createElement("h1", null, z.name)
           ), 
           React.createElement("div", {className: "nowplaying"}, 
-            React.createElement("div", {className: "art", style: style}), 
+            React.createElement(AlbumArt, {url: now.sArtwork}), 
             React.createElement("div", {className: "info"}, 
               React.createElement("h1", null, now.sArtist, " - ", now.sSong), 
               React.createElement(User, {className: "user", avatar: now.sUserImage, name: now.sUser})
@@ -161,8 +161,17 @@ var ZoneDetail = React.createClass({displayName: "ZoneDetail",
   }
 });
 
+var AlbumArt = React.createClass({displayName: "AlbumArt",
+  render: function () {
+    var style = {
+      backgroundImage: 'url(' + this.props.url + ')'
+    };
+    return React.createElement("div", {className: "art", style: style});
+  }
+});
+
 var User = React.createClass({displayName: "User",
-  render: function() {
+  render: function () {
     var style = {
       backgroundImage: 'url(' + this.props.avatar + ')'
     };

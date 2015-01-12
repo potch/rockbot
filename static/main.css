@@ -1,0 +1,165 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #000;
+  color: #fff;
+  font-family: 'Fira Sans', sans-serif;
+  overflow: hidden;
+  font-size: 4vmin;
+  height: 100%;
+}
+
+a:link, a:visited, a:active {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* App */
+#app {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+.app {
+  width: 300vw;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100vh;
+  transition: 300ms transform ease-out;
+}
+.app > section {
+  height: 100vh;
+  width: 100vw;
+}
+.app[data-mode="overview"] {
+  transform: translate(0, 0);
+}
+.app[data-mode="detail"] {
+  transform: translate(-100vw, 0);
+}
+
+/* Queue */
+.queue-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+.queue {
+  height: 100%;
+  overflow: auto;
+  font-size: 4vmin;
+}
+.queue-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.queue-item > * + * {
+  margin-left: 1em;
+}
+.queue-item .info {
+  flex: 1;
+}
+.queue .user {
+  height: 1em;
+  width: 1em;
+}
+.queue .up, .queue .down {
+  white-space: nowrap;
+  width: 10vmin;
+  text-align: center;
+}
+
+/* Detail */
+.detail {
+  display: flex;
+  padding: 1em;
+  flex-direction: column;
+}
+.detail > * + * {
+  margin-top: 1rem;
+}
+header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 3vmin;
+}
+header > * + * {
+  margin-left: 1em;
+}
+header a {
+  padding: 1rem 1rem 1rem 0;
+}
+header > h1 {
+  flex: 1;
+}
+.user {
+  border-radius: 100%;
+  background-size: cover;
+  background-position: center;
+}
+.upnext {
+  font-style: italic;
+  font-size: 5vmin;
+  margin-top: 2rem;
+}
+.nowplaying {
+  display: flex;
+  flex-direction: row;
+}
+.nowplaying .info {
+  display: flex;
+  font-size: 4vmin;
+  line-height: 6vmin;
+  margin-left: 1em;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+.nowplaying .art {
+  flex-shrink: 0;
+  height: 30vmin;
+  width: 30vmin;
+}
+.nowplaying .user {
+  height: 8vmin;
+  width: 8vmin;
+  margin-top: 1rem;
+}
+.art {
+  background-position: center;
+  background-size: cover;
+}
+
+/* Overview */
+.overview {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.overview .zone-item {
+  flex: 1;
+  font-size: 4vmin;
+}
+.zone-item > div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.zone-item .art {
+  height: 20vh;
+  width: 20vh;
+  flex-shrink: 0;
+  margin-right: 1em;
+}

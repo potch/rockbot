@@ -73,8 +73,11 @@ var ZoneOverview = React.createClass({
     if (this.props.nowPlaying) {
       return (
         <div>
-          <div>{this.props.name}</div>
-          <div>{this.props.nowPlaying.sArtist} - {this.props.nowPlaying.sSong}</div>
+          <AlbumArt url={this.props.nowPlaying.sArtwork} />
+          <div className="info">
+            <div>{this.props.name}</div>
+            <div>{this.props.nowPlaying.sArtist} - {this.props.nowPlaying.sSong}</div>
+          </div>
         </div>
       );
     }
@@ -130,9 +133,6 @@ var ZoneDetail = React.createClass({
     if (z) {
       var now = z.aData.aNowPlaying;
       var queue = z.aData.aQueue;
-      var style = {
-        backgroundImage: 'url(' + now.sArtwork + ')'
-      };
       return (
         <section className="detail">
           <header>
@@ -140,7 +140,7 @@ var ZoneDetail = React.createClass({
             <h1>{z.name}</h1>
           </header>
           <div className="nowplaying">
-            <div className="art" style={style} />
+            <AlbumArt url={now.sArtwork} />
             <div className="info">
               <h1>{now.sArtist} - {now.sSong}</h1>
               <User className="user" avatar={now.sUserImage} name={now.sUser} />
@@ -161,8 +161,17 @@ var ZoneDetail = React.createClass({
   }
 });
 
+var AlbumArt = React.createClass({
+  render: function () {
+    var style = {
+      backgroundImage: 'url(' + this.props.url + ')'
+    };
+    return <div className="art" style={style} />;
+  }
+});
+
 var User = React.createClass({
-  render: function() {
+  render: function () {
     var style = {
       backgroundImage: 'url(' + this.props.avatar + ')'
     };
