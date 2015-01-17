@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "watch": "jsx --watch src/ static/"
+    "build": "npm run build:js && npm run build:css",
+    "build:js": "jsx src/ static/",
+    "build:css": "autoprefixer src/main.css -o static/main.css",
+    "watch": "onchange src/* -- npm run build"
   },
   "author": "Potch",
   "license": "ISC",
@@ -16,6 +19,8 @@
     "socket.io": "^1.2.1"
   },
   "devDependencies": {
+    "autoprefixer": "^5.0.0",
+    "onchange": "0.0.2",
     "react-tools": "^0.12.2"
   },
   "repository": {
