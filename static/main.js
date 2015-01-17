@@ -244,7 +244,7 @@ var SearchPanel = React.createClass({displayName: "SearchPanel",
           React.createElement("a", {href: "#", onClick: this.go.bind(this, 'detail')}, "Back"), 
           React.createElement("h1", null, "Search")
         ), 
-        React.createElement("form", {className: "searchForm"}, 
+        React.createElement("div", {className: "searchForm"}, 
           React.createElement("input", {className: "query", onChange: this.onChange, value: this.state.query})
         ), 
         React.createElement("div", {className: "results-container"}, 

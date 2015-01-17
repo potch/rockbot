@@ -244,9 +244,9 @@ var SearchPanel = React.createClass({
           <a href="#" onClick={this.go.bind(this, 'detail')}>Back</a>
           <h1>Search</h1>
         </header>
-        <form className="searchForm">
+        <div className="searchForm">
           <input className="query" onChange={this.onChange} value={this.state.query} />
-        </form>
+        </div>
         <div className="results-container">
           <SearchResults results={this.state}
                          searchArtist={this.searchArtist}

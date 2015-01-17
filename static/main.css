@@ -225,6 +225,9 @@ header > h1 {
   height: 100%;
   font-size: 2rem;
 }
+.results li {
+  padding: .5rem 0;
+}
 .results h2 {
   font-style: italic;
 }
