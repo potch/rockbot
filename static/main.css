@@ -237,7 +237,7 @@ h2 {
 }
 
 @media (max-device-width: 480px) {
-  .queue {
-    font-size: 2.5rem;
+  html {
+    font-size: 3vmin;
   }
 }

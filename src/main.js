@@ -246,7 +246,6 @@ var SearchPanel = React.createClass({
         </header>
         <form className="searchForm">
           <input className="query" onChange={this.onChange} value={this.state.query} />
-          <button className="submit">submit</button>
         </form>
         <div className="results-container">
           <SearchResults results={this.state}
