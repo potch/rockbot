@@ -8,7 +8,7 @@ function extend(o, n) {
 var App = React.createClass({displayName: "App",
   setMode: function (mode) {
     this.setState(extend(this.state, {
-      mode: 'mode'
+      mode: mode
     }));
   },
   selectZone: function (zone) {
@@ -37,10 +37,12 @@ var App = React.createClass({displayName: "App",
     });
   },
   render: function () {
+    var zone = this.state.zones[this.state.selected];
     return (
       React.createElement("div", {className: "app", "data-mode": this.state.mode}, 
         React.createElement(Overview, {zones: this.state.zones, selectZone: this.selectZone}), 
-        React.createElement(ZoneDetail, {zone: this.state.zones[this.state.selected], go: this.setMode})
+        React.createElement(ZoneDetail, {zone: zone, go: this.setMode}), 
+        React.createElement(SearchPanel, {zone: zone, go: this.setMode})
       )
     );
   }
@@ -102,18 +104,18 @@ var QueueItem = React.createClass({displayName: "QueueItem",
         React.createElement("div", {className: "info"}, a.sArtist, " - ", a.sSong), 
         React.createElement(User, {avatar: a.sUserImage, name: a.sUser}), 
         React.createElement("a", {className: "up", href: "#", 
-           onClick: this.upVote.bind(this, a.idPick)}, "👍 ", a.iLikes), 
+           onClick: this.upVote.bind(this, a.idPick)}, a.iLikes), 
         React.createElement("a", {className: "down", href: "#", 
-           onClick: this.downVote.bind(this, a.idPick)}, "👎 ", a.iDislikes)
+           onClick: this.downVote.bind(this, a.idPick)}, a.iDislikes)
       )
     );
   }
 });
 
 var ZoneDetail = React.createClass({displayName: "ZoneDetail",
-  back: function (e) {
+  go: function (mode, e) {
     e.preventDefault();
-    this.props.go('overview');
+    this.props.go(mode);
   },
   upvote: function (pick) {
     console.log('upvoting pick ' + pick);
@@ -136,8 +138,9 @@ var ZoneDetail = React.createClass({displayName: "ZoneDetail",
       return (
         React.createElement("section", {className: "detail"}, 
           React.createElement("header", null, 
-            React.createElement("a", {href: "#", onClick: this.back}, "Back"), 
-            React.createElement("h1", null, z.name)
+            React.createElement("a", {href: "#", onClick: this.go.bind(this, 'overview')}, "Back"), 
+            React.createElement("h1", null, z.name), 
+            React.createElement("a", {href: "#", onClick: this.go.bind(this, 'search')}, "Search")
           ), 
           React.createElement("div", {className: "nowplaying"}, 
             React.createElement(AlbumArt, {url: now.sArtwork, big: true}), 
@@ -146,7 +149,7 @@ var ZoneDetail = React.createClass({displayName: "ZoneDetail",
               React.createElement(User, {className: "user", avatar: now.sUserImage, name: now.sUser})
             )
           ), 
-          React.createElement("h1", {className: "upnext"}, "Up Next"), 
+          React.createElement("h2", {className: "upnext"}, "Up Next"), 
           React.createElement("div", {className: "queue-container"}, 
             React.createElement("ol", {className: "queue"}, 
               queue.map(function (item) {
@@ -181,6 +184,110 @@ var User = React.createClass({displayName: "User",
       backgroundImage: 'url(' + this.props.avatar + ')'
     };
     return React.createElement("div", {className: "user", style: style, title: this.props.name});
+  }
+});
+
+var SearchPanel = React.createClass({displayName: "SearchPanel",
+  go: function (mode, e) {
+    e.preventDefault();
+    this.props.go(mode);
+  },
+  getInitialState: function () {
+    return {
+      artist: [],
+      song: [],
+      query: ''
+    };
+  },
+  searchArtist: function (artistId) {
+    this.setState(extend(this.state, {
+      query: 'artist:' + artistId
+    }));
+    this.performSearch();
+  },
+  pickSong: function (songId) {
+    socket.emit('pick', {
+      song: songId,
+      venue: this.props.zone.id
+    });
+  },
+  onChange: function (e) {
+    var q = e.target.value;
+    this.setState(extend(this.state, {
+      query: q
+    }));
+    if (q.length > 2) {
+      this.performSearch();
+    }
+  },
+  performSearch: function () {
+    console.log('search', this.state.query);
+    socket.emit('search', {
+      query: this.state.query,
+      venue: this.props.zone.id
+    });
+  },
+  componentDidMount: function() {
+    var self = this;
+    socket.on('results', function (data) {
+      console.log(data.query, self.state.query);
+      if (data.query === self.state.query) {
+        console.log(data);
+        self.setState(extend(self.state, data));
+      }
+    });
+  },
+  render: function () {
+    return (
+      React.createElement("section", {className: "search"}, 
+        React.createElement("header", null, 
+          React.createElement("a", {href: "#", onClick: this.go.bind(this, 'detail')}, "Back"), 
+          React.createElement("h1", null, "Search")
+        ), 
+        React.createElement("form", {className: "searchForm"}, 
+          React.createElement("input", {className: "query", onChange: this.onChange, value: this.state.query}), 
+          React.createElement("button", {className: "submit"}, "submit")
+        ), 
+        React.createElement("div", {className: "results-container"}, 
+          React.createElement(SearchResults, {results: this.state, 
+                         searchArtist: this.searchArtist, 
+                         pickSong: this.pickSong})
+        )
+      )
+    );
+  }
+});
+
+var SearchResults = React.createClass({displayName: "SearchResults",
+  pickSong: function (songId, e) {
+    this.props.pickSong(songId);
+  },
+  listArtist: function (artistId, e) {
+    this.props.searchArtist(artistId);
+  },
+  render: function () {
+    var artists = this.props.results.artist;
+    var songs = this.props.results.song;
+    return (
+      React.createElement("div", {className: "results"}, 
+        React.createElement("h2", null, "Artists (", artists.length, ")"), 
+        React.createElement("ul", null, 
+          artists.filter(function (r) {
+            return r.bEnabled !== false;
+          }).map(function (r) {
+            return React.createElement("li", {onClick: this.listArtist.bind(this, r.idArtist)}, r.sName);
+          }, this)
+        ), 
+        React.createElement("h2", null, "Songs (", songs.length, ")"), 
+        React.createElement("ul", null, 
+          songs.filter(function (r) {
+            return r.bEnabled !== false;
+          }).map(function (r) {
+            return React.createElement("li", {onClick: this.pickSong.bind(this, r.idSong)}, r.sArtist, " - ", r.sName);
+          }, this)
+        )
+      )
+    );
   }
 });
 

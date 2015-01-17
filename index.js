@@ -52,17 +52,19 @@ function api(v, m, p, cb) {
     qs: p
   }, function(err, res, body) {
     if (err) {
-      cb(err);
+      console.log('api error:', err);
+      return cb(err);
     }
     if (body) {
       try {
-        cb(null, JSON.parse(body));
+        body = JSON.parse(body);
+        return cb(null, body);
       } catch (e) {
-        cb(e);
+        return cb(e);
       }
-    } else {
-      cb(null);
     }
+    throw "whuck";
+    return cb(null);
   });
 }
 
@@ -87,21 +89,82 @@ function checkCurrent() {
   setTimeout(checkCurrent, 10000);
 }
 
-io.on('connect', function(socket) {
+io.on('connect', function (socket) {
   io.emit('currently', currently);
 
-  socket.on('upvote', function(o) {
+  socket.on('upvote', function (o) {
     console.log('upvote', o);
-    var v = venues[o.venue];
     api(o.venue, 'kiosk:add_up_vote', {pick: o.pick}, function (err, res) {
       console.log(err, res);
+      for (var i = 0; i < currently.length; i++) {
+        if (currently[i].id === o.venue) {
+          res.name = currently[i].name;
+          res.id = o.venue;
+          currently[i] = res;
+          io.emit('currently', currently);
+        }
+      }
     });
   });
-  socket.on('downvote', function(o) {
+  socket.on('downvote', function (o) {
     console.log('downvote', o);
-    var v = venues[o.venue];
     api(o.venue, 'kiosk:add_down_vote', {pick: o.pick}, function (err, res) {
       console.log(err, res);
+      for (var i = 0; i < currently.length; i++) {
+        if (currently[i].id === o.venue) {
+          res.name = currently[i].name;
+          res.id = o.venue;
+          currently[i] = res;
+          io.emit('currently', currently);
+        }
+      }
+    });
+  });
+  socket.on('search', function (o) {
+    console.log('search', o);
+    var results = {
+      query: o.query,
+      artist: []
+    };
+    var match = o.query.match(/^artist:(\d+)/);
+    if (match) {
+      api(o.venue, 'kiosk:get_artist', {artist: match[1]}, function (err, res) {
+        if (err) {
+          results.song = [];
+        } else {
+          results.song = res.aData;
+        }
+        socket.emit('results', results);
+      });
+    } else {
+      api(o.venue, 'kiosk:search_artists', {query: o.query}, function (err, res) {
+        if (err) {
+          results.artist = [];
+        } else {
+          results.artist = res.aData;
+        }
+        api(o.venue, 'kiosk:search_songs', {query: o.query}, function (err, res) {
+          if (err) {
+            results.song = [];
+          } else {
+            results.song = res.aData;
+          }
+          socket.emit('results', results);
+        });
+      });
+    }
+  });
+  socket.on('pick', function (o) {
+    api(o.venue, 'kiosk:add_song', {song: o.song}, function (err, res) {
+      console.log(err, res);
+      for (var i = 0; i < currently.length; i++) {
+        if (currently[i].id === o.venue) {
+          res.name = currently[i].name;
+          res.id = o.venue;
+          currently[i] = res;
+          io.emit('currently', currently);
+        }
+      }
     });
   });
 });

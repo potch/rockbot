@@ -8,7 +8,7 @@ function extend(o, n) {
 var App = React.createClass({
   setMode: function (mode) {
     this.setState(extend(this.state, {
-      mode: 'mode'
+      mode: mode
     }));
   },
   selectZone: function (zone) {
@@ -37,10 +37,12 @@ var App = React.createClass({
     });
   },
   render: function () {
+    var zone = this.state.zones[this.state.selected];
     return (
       <div className="app" data-mode={this.state.mode}>
         <Overview zones={this.state.zones} selectZone={this.selectZone} />
-        <ZoneDetail zone={this.state.zones[this.state.selected]} go={this.setMode} />
+        <ZoneDetail zone={zone} go={this.setMode} />
+        <SearchPanel zone={zone} go={this.setMode} />
       </div>
     );
   }
@@ -102,18 +104,18 @@ var QueueItem = React.createClass({
         <div className="info">{a.sArtist} - {a.sSong}</div>
         <User avatar={a.sUserImage} name={a.sUser} />
         <a className="up" href="#"
-           onClick={this.upVote.bind(this, a.idPick)}>👍 {a.iLikes}</a>
+           onClick={this.upVote.bind(this, a.idPick)}>{a.iLikes}</a>
         <a className="down" href="#"
-           onClick={this.downVote.bind(this, a.idPick)}>👎 {a.iDislikes}</a>
+           onClick={this.downVote.bind(this, a.idPick)}>{a.iDislikes}</a>
       </li>
     );
   }
 });
 
 var ZoneDetail = React.createClass({
-  back: function (e) {
+  go: function (mode, e) {
     e.preventDefault();
-    this.props.go('overview');
+    this.props.go(mode);
   },
   upvote: function (pick) {
     console.log('upvoting pick ' + pick);
@@ -136,8 +138,9 @@ var ZoneDetail = React.createClass({
       return (
         <section className="detail">
           <header>
-            <a href="#" onClick={this.back}>Back</a>
+            <a href="#" onClick={this.go.bind(this, 'overview')}>Back</a>
             <h1>{z.name}</h1>
+            <a href="#" onClick={this.go.bind(this, 'search')}>Search</a>
           </header>
           <div className="nowplaying">
             <AlbumArt url={now.sArtwork} big={true} />
@@ -146,7 +149,7 @@ var ZoneDetail = React.createClass({
               <User className="user" avatar={now.sUserImage} name={now.sUser} />
             </div>
           </div>
-          <h1 className="upnext">Up Next</h1>
+          <h2 className="upnext">Up Next</h2>
           <div className="queue-container">
             <ol className="queue">
               {queue.map(function (item) {
@@ -181,6 +184,110 @@ var User = React.createClass({
       backgroundImage: 'url(' + this.props.avatar + ')'
     };
     return <div className="user" style={style} title={this.props.name}></div>;
+  }
+});
+
+var SearchPanel = React.createClass({
+  go: function (mode, e) {
+    e.preventDefault();
+    this.props.go(mode);
+  },
+  getInitialState: function () {
+    return {
+      artist: [],
+      song: [],
+      query: ''
+    };
+  },
+  searchArtist: function (artistId) {
+    this.setState(extend(this.state, {
+      query: 'artist:' + artistId
+    }));
+    this.performSearch();
+  },
+  pickSong: function (songId) {
+    socket.emit('pick', {
+      song: songId,
+      venue: this.props.zone.id
+    });
+  },
+  onChange: function (e) {
+    var q = e.target.value;
+    this.setState(extend(this.state, {
+      query: q
+    }));
+    if (q.length > 2) {
+      this.performSearch();
+    }
+  },
+  performSearch: function () {
+    console.log('search', this.state.query);
+    socket.emit('search', {
+      query: this.state.query,
+      venue: this.props.zone.id
+    });
+  },
+  componentDidMount: function() {
+    var self = this;
+    socket.on('results', function (data) {
+      console.log(data.query, self.state.query);
+      if (data.query === self.state.query) {
+        console.log(data);
+        self.setState(extend(self.state, data));
+      }
+    });
+  },
+  render: function () {
+    return (
+      <section className="search">
+        <header>
+          <a href="#" onClick={this.go.bind(this, 'detail')}>Back</a>
+          <h1>Search</h1>
+        </header>
+        <form className="searchForm">
+          <input className="query" onChange={this.onChange} value={this.state.query} />
+          <button className="submit">submit</button>
+        </form>
+        <div className="results-container">
+          <SearchResults results={this.state}
+                         searchArtist={this.searchArtist}
+                         pickSong={this.pickSong} />
+        </div>
+      </section>
+    );
+  }
+});
+
+var SearchResults = React.createClass({
+  pickSong: function (songId, e) {
+    this.props.pickSong(songId);
+  },
+  listArtist: function (artistId, e) {
+    this.props.searchArtist(artistId);
+  },
+  render: function () {
+    var artists = this.props.results.artist;
+    var songs = this.props.results.song;
+    return (
+      <div className="results">
+        <h2>Artists ({artists.length})</h2>
+        <ul>
+          {artists.filter(function (r) {
+            return r.bEnabled !== false;
+          }).map(function (r) {
+            return <li onClick={this.listArtist.bind(this, r.idArtist)}>{r.sName}</li>;
+          }, this)}
+        </ul>
+        <h2>Songs ({songs.length})</h2>
+        <ul>
+          {songs.filter(function (r) {
+            return r.bEnabled !== false;
+          }).map(function (r) {
+            return <li onClick={this.pickSong.bind(this, r.idSong)}>{r.sArtist} - {r.sName}</li>;
+          }, this)}
+        </ul>
+      </div>
+    );
   }
 });
 
