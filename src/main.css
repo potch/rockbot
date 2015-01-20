@@ -21,9 +21,12 @@ body {
   height: 100%;
 }
 
-a:link, a:visited, a:active {
+a:link, a:visited, a:active, a:hover {
   color: #fff;
   text-decoration: none;
+}
+a.active {
+  background: #444;
 }
 
 /* App */
@@ -64,6 +67,7 @@ a:link, a:visited, a:active {
 .queue {
   height: 100%;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: 2rem;
 }
 .queue-item {
@@ -206,14 +210,20 @@ header > h1 {
   display: flex;
   flex-direction: row;
   align-items: center;
+  background: #fff;
+  border-radius: 2em;
+  padding-right: .5em;
+  font-size: 1.5rem;
+}
+.searchForm .throb {
+  color: #000;
 }
 .query {
   flex: 1;
   font: inherit;
-  font-size: 1.5rem;
+  background: transparent;
+  border: 0 none;
   padding: .5rem 2rem;
-  border-radius: 2em;
-  border: 0;
 }
 .results-container {
   overflow: hidden;
@@ -222,14 +232,23 @@ header > h1 {
 }
 .results {
   overflow: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   height: 100%;
   font-size: 2rem;
 }
 .results li {
   padding: .5rem 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
 }
 .results h2 {
   font-style: italic;
+}
+.results a {
+  display: block;
+  flex: 1;
 }
 h1 {
   font-size: 2.5rem;
@@ -237,6 +256,28 @@ h1 {
 h2 {
   font-size: 2.25rem;
   color: #ddd;
+}
+.results .throb {
+  color: #fff;
+}
+
+/* loading */
+.throb {
+  width: 1.5em;
+  height: 1.5em;
+  background-color: red;
+  flex-shrink: 0;
+  background: transparent;
+  border: .25em solid currentColor;
+  border-radius: 2em;
+  border-color: currentColor transparent currentColor transparent;
+  animation: 500ms spin linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-device-width: 480px) {

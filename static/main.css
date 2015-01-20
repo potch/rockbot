@@ -21,9 +21,12 @@ body {
   height: 100%;
 }
 
-a:link, a:visited, a:active {
+a:link, a:visited, a:active, a:hover {
   color: #fff;
   text-decoration: none;
+}
+a.active {
+  background: #444;
 }
 
 /* App */
@@ -84,6 +87,7 @@ a:link, a:visited, a:active {
 .queue {
   height: 100%;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: 2rem;
 }
 .queue-item {
@@ -320,6 +324,13 @@ header > h1 {
   -webkit-align-items: center;
       -ms-flex-align: center;
           align-items: center;
+  background: #fff;
+  border-radius: 2em;
+  padding-right: .5em;
+  font-size: 1.5rem;
+}
+.searchForm .throb {
+  color: #000;
 }
 .query {
   -webkit-box-flex: 1;
@@ -327,10 +338,9 @@ header > h1 {
       -ms-flex: 1;
           flex: 1;
   font: inherit;
-  font-size: 1.5rem;
+  background: transparent;
+  border: 0 none;
   padding: .5rem 2rem;
-  border-radius: 2em;
-  border: 0;
 }
 .results-container {
   overflow: hidden;
@@ -342,14 +352,33 @@ header > h1 {
 }
 .results {
   overflow: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   height: 100%;
   font-size: 2rem;
 }
 .results li {
   padding: .5rem 0;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  overflow: hidden;
 }
 .results h2 {
   font-style: italic;
+}
+.results a {
+  display: block;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
 }
 h1 {
   font-size: 2.5rem;
@@ -357,6 +386,40 @@ h1 {
 h2 {
   font-size: 2.25rem;
   color: #ddd;
+}
+.results .throb {
+  color: #fff;
+}
+
+/* loading */
+.throb {
+  width: 1.5em;
+  height: 1.5em;
+  background-color: red;
+  -webkit-flex-shrink: 0;
+      -ms-flex-negative: 0;
+          flex-shrink: 0;
+  background: transparent;
+  border: .25em solid currentColor;
+  border-radius: 2em;
+  border-color: currentColor transparent currentColor transparent;
+  -webkit-animation: 500ms spin linear infinite;
+          animation: 500ms spin linear infinite;
+}
+
+@-webkit-keyframes spin {
+
+  to {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  to {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+  }
 }
 
 @media (max-device-width: 480px) {

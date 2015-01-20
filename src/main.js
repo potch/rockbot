@@ -5,6 +5,16 @@ function extend(o, n) {
   return o;
 }
 
+function classSet(o) {
+  var c = [];
+  for (var k in o) {
+    if (!!o[k]) {
+      c.push(k);
+    }
+  }
+  return c.join(' ');
+}
+
 var App = React.createClass({
   setMode: function (mode) {
     this.setState(extend(this.state, {
@@ -196,7 +206,8 @@ var SearchPanel = React.createClass({
     return {
       artist: [],
       song: [],
-      query: ''
+      query: '',
+      pending: false
     };
   },
   searchArtist: function (artistId) {
@@ -211,17 +222,25 @@ var SearchPanel = React.createClass({
       venue: this.props.zone.id
     });
   },
-  onChange: function (e) {
-    var q = e.target.value;
-    this.setState(extend(this.state, {
-      query: q
-    }));
-    if (q.length > 2) {
+  updateQuery: function (q) {
+    if (q.length > 0) {
+      this.setState(extend(this.state, {
+        query: q
+      }));
       this.performSearch();
     }
   },
+  onChange: function (e) {
+    console.log(e);
+    var q = e.target.value;
+    clearTimeout(this.to);
+    this.to = setTimeout(this.updateQuery.bind(this, q), 200);
+  },
   performSearch: function () {
     console.log('search', this.state.query);
+    this.setState(extend(this.state, {
+      pending: true
+    }));
     socket.emit('search', {
       query: this.state.query,
       venue: this.props.zone.id
@@ -230,25 +249,37 @@ var SearchPanel = React.createClass({
   componentDidMount: function() {
     var self = this;
     socket.on('results', function (data) {
-      console.log(data.query, self.state.query);
       if (data.query === self.state.query) {
-        console.log(data);
-        self.setState(extend(self.state, data));
+        console.log('results', data);
+        self.setState(extend(self.state, {
+          artist: data.artist,
+          song: data.song,
+          pending: false
+        }));
       }
     });
   },
   render: function () {
+    if (!this.props.zone) {
+      return <div></div>;
+    }
+    var pending = '';
+    if (this.state.pending) {
+      pending = 'pending';
+    }
     return (
       <section className="search">
         <header>
           <a href="#" onClick={this.go.bind(this, 'detail')}>Back</a>
           <h1>Search</h1>
         </header>
-        <div className="searchForm">
-          <input className="query" onChange={this.onChange} value={this.state.query} />
+        <div className={"searchForm " + pending}>
+          <input className="query" onChange={this.onChange} />
+          {this.state.pending ? <Throbber /> : ''}
         </div>
         <div className="results-container">
           <SearchResults results={this.state}
+                         queue={this.props.zone.aData.aQueue}
                          searchArtist={this.searchArtist}
                          pickSong={this.pickSong} />
         </div>
@@ -258,15 +289,22 @@ var SearchPanel = React.createClass({
 });
 
 var SearchResults = React.createClass({
-  pickSong: function (songId, e) {
+  pickSong: function (songId) {
     this.props.pickSong(songId);
   },
   listArtist: function (artistId, e) {
+    e.preventDefault();
     this.props.searchArtist(artistId);
   },
   render: function () {
     var artists = this.props.results.artist;
     var songs = this.props.results.song;
+    if (!artists) {
+      artists = [];
+    }
+    if (!songs) {
+      songs = [];
+    }
     return (
       <div className="results">
         <h2>Artists ({artists.length})</h2>
@@ -274,7 +312,14 @@ var SearchResults = React.createClass({
           {artists.filter(function (r) {
             return r.bEnabled !== false;
           }).map(function (r) {
-            return <li onClick={this.listArtist.bind(this, r.idArtist)}>{r.sName}</li>;
+            return (
+              <li key={r.idArtist}>
+                <a href="#"
+                   onClick={this.listArtist.bind(this, r.idArtist)}>
+                    {r.sName}
+                </a>
+              </li>
+            );
           }, this)}
         </ul>
         <h2>Songs ({songs.length})</h2>
@@ -282,7 +327,15 @@ var SearchResults = React.createClass({
           {songs.filter(function (r) {
             return r.bEnabled !== false;
           }).map(function (r) {
-            return <li onClick={this.pickSong.bind(this, r.idSong)}>{r.sArtist} - {r.sName}</li>;
+            var picked = false;
+            if (this.props.queue) {
+              this.props.queue.forEach(function (q) {
+                if (q.sSong === r.sName && q.sArtist === r.sArtist) {
+                  picked = true;
+                }
+              });
+            }
+            return <SongResult key={r.idSong} picked={picked} song={r} pick={this.pickSong}/>;
           }, this)}
         </ul>
       </div>
@@ -290,6 +343,44 @@ var SearchResults = React.createClass({
   }
 });
 
+var SongResult = React.createClass({
+  getInitialState: function () {
+    return {
+      pending: false
+    };
+  },
+  pick: function (e) {
+    e.preventDefault();
+    this.props.pick(this.props.song.idSong);
+    this.setState({
+      pending: true
+    });
+  },
+  render: function () {
+    var song = this.props.song;
+    var pending = this.state.pending && !this.props.picked;
+    var classes = classSet({
+      'picked': this.props.picked,
+      'pending': pending
+    });
+    return (
+      <li key={song.idSong} className={classes}>
+        <a href="#"
+           onClick={this.pick}>
+            {song.sArtist} - {song.sName}
+        </a>
+        {pending ? <Throbber /> : ''}
+        {this.props.picked ? <div>✓</div> : ''}
+      </li>
+    );
+  }
+});
+
+var Throbber = React.createClass({
+  render: function () {
+    return <div className="throb"></div>;
+  }
+});
 
 var socket = io.connect('/');
 var o = React.createElement(Overview);
