@@ -1,0 +1,13 @@
+{
+  "name": "Rockbot",
+  "description": "In-office jukebox for Rockbot",
+  "launch_path": "/",
+  "icons": {
+    "128": "/icon.png"
+  },
+  "developer": {
+    "name": "Potch",
+    "url": "https://github.com/potch/rockbot"
+  },
+  "default_locale": "en"
+}
