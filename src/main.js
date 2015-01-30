@@ -75,8 +75,62 @@ var Overview = React.createClass({
             </div>
           );
         }, this)}
+        <AppInstallDingus />
       </section>
     );
+  }
+});
+
+var AppInstallDingus = React.createClass({
+  attemptInstall: function (e) {
+    e.preventDefault();
+    if (this.state.capable) {
+      var url = window.location.origin + '/manifest.webapp';
+      var installReq = navigator.mozApps.install(url);
+      installReq.onsuccess = function () {
+        if (installReq.result) {
+          this.state.installed = true;
+          this.setState(this.state);
+        }
+      }.bind(this);
+    }
+  },
+  getInitialState: function () {
+    return {
+      installed: false,
+      pending: false,
+      capable: navigator.mozApps
+    };
+  },
+  componentDidMount: function() {
+    if (this.state.capable) {
+      var selfReq = navigator.mozApps.getSelf();
+      selfReq.onsuccess = function () {
+        console.log('installed', selfReq.result);
+        if (selfReq.result) {
+          this.state.installed = true;
+          this.setState(this.state);
+        }
+      }.bind(this);
+
+      var installedReq = navigator.mozApps.getInstalled();
+      installedReq.onsuccess = function () {
+        console.log('installed', installedReq.result);
+        if (installedReq.result && installedReq.result.length) {
+          this.state.installed = true;
+          this.setState(this.state);
+        }
+      }.bind(this);
+    }
+  },
+  render: function () {
+    var classes = classSet({
+      installed: this.state.installed,
+      pending: this.state.pending,
+      capable: this.state.capable,
+      install: true
+    });
+    return <a className={classes} href="#" onClick={this.attemptInstall}>Install</a>;
   }
 });
 

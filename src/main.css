@@ -46,6 +46,7 @@ a.active {
 .app > section {
   height: 100vh;
   width: 100vw;
+  position: relative;
 }
 .app[data-mode="overview"] {
   transform: translate(0, 0);
@@ -272,6 +273,32 @@ h2 {
   border-radius: 2em;
   border-color: currentColor transparent currentColor transparent;
   animation: 500ms spin linear infinite;
+}
+
+/* install */
+.install {
+  position: absolute;
+  bottom: 1em;
+  right: 1em;
+  background: #000;
+  padding: .5em 2em .5em 1em;
+  border: 1px solid white;
+  border-radius: 5em;
+  display: none;
+  font-size: 1.5em;
+}
+.install.capable {
+  display: block;
+}
+.install.pending, .install.installed {
+  display: none;
+}
+.install:before {
+  content: '⬇︎';
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: .5em .7em 0 0;
 }
 
 @keyframes spin {

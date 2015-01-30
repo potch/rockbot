@@ -63,7 +63,6 @@ function api(v, m, p, cb) {
         return cb(e);
       }
     }
-    throw "whuck";
     return cb(null);
   });
 }
