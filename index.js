@@ -168,6 +168,18 @@ io.on('connect', function (socket) {
   });
 });
 
+var sekrit = process.env.SEKRIT;
+app.get('/skip', function (req, res) {
+  var zone = req.query.z;
+  var key = req.query.k;
+  if (zone && venues[zone-1] && key === sekrit) {
+    api(zone - 1, 'admin:skip', {}, function () {
+      res.end('yup');
+    });
+  } else {
+    res.end('nope');
+  }
+});
 
 app.get('/', function(req, res) {
   res.redirect('/index.html');
