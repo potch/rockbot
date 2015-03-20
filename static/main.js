@@ -48,9 +48,12 @@ var App = React.createClass({displayName: "App",
   },
   render: function () {
     var zone = this.state.zones[this.state.selected];
+    var zones = this.state.zones.filter(function (z) {
+      return z.aData.iStatus === 'online';
+    });
     return (
       React.createElement("div", {className: "app", "data-mode": this.state.mode}, 
-        React.createElement(Overview, {zones: this.state.zones, selectZone: this.selectZone}), 
+        React.createElement(Overview, {zones: zones, selectZone: this.selectZone}), 
         React.createElement(ZoneDetail, {zone: zone, go: this.setMode}), 
         React.createElement(SearchPanel, {zone: zone, go: this.setMode})
       )
@@ -63,14 +66,21 @@ var Overview = React.createClass({displayName: "Overview",
     this.props.selectZone(i);
   },
   render: function () {
+    var height = 100 / this.props.zones.length;
+    height = Math.min(height, 35) + 'vh';
+    var style = {
+      height: height
+    };
     return (
       React.createElement("section", {className: "overview"}, 
         this.props.zones.map(function(z, i) {
           return (
             React.createElement("div", {className: "zone-item", key: i, 
-                 onClick: this.handleClick.bind(this, i)}, 
+                 onClick: this.handleClick.bind(this, i), 
+                 style: style}, 
               React.createElement(ZoneOverview, {
                 name: z.name, 
+                height: height, 
                 nowPlaying: z.aData.aNowPlaying})
             )
           );
@@ -139,7 +149,7 @@ var ZoneOverview = React.createClass({displayName: "ZoneOverview",
     if (this.props.nowPlaying) {
       return (
         React.createElement("div", null, 
-          React.createElement(AlbumArt, {url: this.props.nowPlaying.sArtwork}), 
+          React.createElement(AlbumArt, {url: this.props.nowPlaying.sArtwork, height: this.props.height}), 
           React.createElement("div", {className: "info"}, 
             React.createElement("div", null, this.props.name), 
             React.createElement("div", null, this.props.nowPlaying.sArtist, " - ", this.props.nowPlaying.sSong)
@@ -236,7 +246,9 @@ var AlbumArt = React.createClass({displayName: "AlbumArt",
       url = url.replace('/150/', '/500/');
     }
     var style = {
-      backgroundImage: 'url(' + url + ')'
+      backgroundImage: 'url(' + url + ')',
+      height: this.props.height,
+      width: this.props.height
     };
     return React.createElement("div", {className: "art", style: style});
   }

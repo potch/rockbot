@@ -48,9 +48,12 @@ var App = React.createClass({
   },
   render: function () {
     var zone = this.state.zones[this.state.selected];
+    var zones = this.state.zones.filter(function (z) {
+      return z.aData.iStatus === 'online';
+    });
     return (
       <div className="app" data-mode={this.state.mode}>
-        <Overview zones={this.state.zones} selectZone={this.selectZone} />
+        <Overview zones={zones} selectZone={this.selectZone} />
         <ZoneDetail zone={zone} go={this.setMode} />
         <SearchPanel zone={zone} go={this.setMode} />
       </div>
@@ -63,14 +66,21 @@ var Overview = React.createClass({
     this.props.selectZone(i);
   },
   render: function () {
+    var height = 100 / this.props.zones.length;
+    height = Math.min(height, 35) + 'vh';
+    var style = {
+      height: height
+    };
     return (
       <section className="overview">
         {this.props.zones.map(function(z, i) {
           return (
             <div className="zone-item" key={i}
-                 onClick={this.handleClick.bind(this, i)}>
+                 onClick={this.handleClick.bind(this, i)}
+                 style={style}>
               <ZoneOverview
                 name={z.name}
+                height={height}
                 nowPlaying={z.aData.aNowPlaying} />
             </div>
           );
@@ -139,7 +149,7 @@ var ZoneOverview = React.createClass({
     if (this.props.nowPlaying) {
       return (
         <div>
-          <AlbumArt url={this.props.nowPlaying.sArtwork} />
+          <AlbumArt url={this.props.nowPlaying.sArtwork} height={this.props.height}/>
           <div className="info">
             <div>{this.props.name}</div>
             <div>{this.props.nowPlaying.sArtist} - {this.props.nowPlaying.sSong}</div>
@@ -236,7 +246,9 @@ var AlbumArt = React.createClass({
       url = url.replace('/150/', '/500/');
     }
     var style = {
-      backgroundImage: 'url(' + url + ')'
+      backgroundImage: 'url(' + url + ')',
+      height: this.props.height,
+      width: this.props.height
     };
     return <div className="art" style={style} />;
   }
