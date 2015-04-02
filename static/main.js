@@ -40,17 +40,18 @@ var App = React.createClass({displayName: "App",
       data = data.sort(function (a, b) {
         return a.name > b.name ? 1: -1;
       });
+      var zones = data.filter(function (z) {
+        return z.aData.iStatus === 'online';
+      });
       self.setState({
         mode: self.state.mode,
-        zones: data
+        zones: zones
       });
     });
   },
   render: function () {
-    var zone = this.state.zones[this.state.selected];
-    var zones = this.state.zones.filter(function (z) {
-      return z.aData.iStatus === 'online';
-    });
+    var zones = this.state.zones;
+    var zone = zones[this.state.selected];
     return (
       React.createElement("div", {className: "app", "data-mode": this.state.mode}, 
         React.createElement(Overview, {zones: zones, selectZone: this.selectZone}), 
@@ -163,7 +164,6 @@ var ZoneOverview = React.createClass({displayName: "ZoneOverview",
 
 var QueueItem = React.createClass({displayName: "QueueItem",
   upVote: function (pick, e) {
-    console.log(this.props);
     e.preventDefault();
     this.props.upvote(pick);
   },
