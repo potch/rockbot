@@ -41,7 +41,7 @@ var App = React.createClass({
         return a.name > b.name ? 1: -1;
       });
       var zones = data.filter(function (z) {
-        return z.aData.iStatus === 'online';
+        return z.aData.iStatus === 'online' && z.aData.aNowPlaying;
       });
       self.setState({
         mode: self.state.mode,
@@ -206,7 +206,7 @@ var ZoneDetail = React.createClass({
   },
   render: function () {
     var z = this.props.zone;
-    if (z) {
+    if (z && z.aData.aNowPlaying) {
       var now = z.aData.aNowPlaying;
       var queue = z.aData.aQueue;
       return (
